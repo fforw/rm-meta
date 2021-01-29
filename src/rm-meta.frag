@@ -58,66 +58,9 @@ float smin(float a, float b, float k) {
     return mix(b, a, h) - k*h*(1.0-h);
 }
 
-float sdCapsule(vec3 p, vec3 a, vec3 b, float r) {
-    vec3 ab = b-a;
-    vec3 ap = p-a;
-
-    float t = dot(ab, ap) / dot(ab, ab);
-    t = clamp(t, 0., 1.);
-
-    vec3 c = a + t*ab;
-
-    return length(p-c)-r;
-}
-
-float sdCylinder(vec3 p, vec3 a, vec3 b, float r) {
-    vec3 ab = b-a;
-    vec3 ap = p-a;
-
-    float t = dot(ab, ap) / dot(ab, ab);
-    //t = clamp(t, 0., 1.);
-
-    vec3 c = a + t*ab;
-
-    float x = length(p-c)-r;
-    float y = (abs(t-.5)-.5)*length(ab);
-    float e = length(max(vec2(x, y), 0.));
-    float i = min(max(x, y), 0.);
-
-    return e+i;
-}
-
-float sdCappedCylinder( vec3 p, float h, float r )
-{
-    vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(h,r);
-    return min(max(d.x,d.y),0.0) + length(max(d,0.0));
-}
-
 float sdSphere(vec3 p, float s)
 {
     return length(p)-s;
-}
-
-float sdTorus(vec3 p, vec2 r) {
-    float x = length(p.xz)-r.x;
-    return length(vec2(x, p.y))-r.y;
-}
-
-float sdRoundBox(vec3 p, vec3 b, float r)
-{
-    vec3 q = abs(p) - b;
-    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
-}
-
-
-float sdBeam(vec3 p, vec3 c)
-{
-    return length(p.xz-c.xy)-c.z;
-}
-
-float dBox(vec3 p, vec3 s) {
-    p = abs(p)-s;
-    return length(max(p, 0.))+min(max(p.x, max(p.y, p.z)), 0.);
 }
 
 vec2 opUnion(vec2 curr, float d, float id)
@@ -201,47 +144,6 @@ vec3 getPaletteColor(float id)
     //return id < float(last) ? mix(u_palette[int(id)], u_palette[int(id) + 1], fract(id)) : u_palette[last];
     return mix(u_palette[int(id)], u_palette[int(id) + 1], fract(id));
 }
-
-
-
-vec3 applyFog(
-in vec3  rgb,      // original color of the pixel
-in float distance, // camera to point distance
-in vec3  rayOri,   // camera position
-in vec3  rayDir,
-in vec3 p     // camera to point vector
-)
-{
-    float pos = p.z;
-
-    float c = 0.005;
-    float b = 2.0;// + sin((pos + p.x * sin(pos * 0.27)) * 0.31 ) * 0.15 + sin(pos * 0.17 ) * 0.15;
-
-    float fogAmount = c * exp(-rayOri.y*b) * (1.0-exp( -distance*rayDir.y*b ))/rayDir.y;
-    vec3  fogColor  = vec3(1);
-    return mix( rgb, fogColor, fogAmount );
-}
-
-
-float softshadow( in vec3 ro, in vec3 rd, float k, float mx )
-{
-    float res = 1.0;
-    float ph = 1e20;
-    for( float t=0.001; t < mx; )
-    {
-        float h = getDistance(ro + rd*t).x;
-        if( h < 0.0001 )
-        return 0.0;
-
-        float y = h * h / ( 2.0 * ph );
-        float d = sqrt( h * h - y * y);
-        res = min( res, k * d /max(0.0, t -y) );
-        ph = h;
-        t += h;
-    }
-    return res;
-}
-
 
 vec3 getBackground(in vec3 n)
 {
