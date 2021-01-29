@@ -177,8 +177,8 @@ void main(void)
         -20
     );
 
-    ro.yz *= Rot((-m.y + 0.5) * pi + u_time * 0.27);
-    ro.xz *= Rot((-m.x + 0.5) * 7.0 - u_time * 0.31);
+    ro.yz *= Rot((-m.y + 0.5) * pi);
+    ro.xz *= Rot((-m.x + 0.5) * 7.0);
 
     vec3 lookAt = vec3(0, 1, 0);
 
