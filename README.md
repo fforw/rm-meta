@@ -1,5 +1,3 @@
-# Raymarcher 05
+# Raymarching metaballs test
 
-Raymarching shader
-
-[Live demo](https://fforw.github.io/rm-05/)
+[Live demo](https://fforw.github.io/rm-meta/)

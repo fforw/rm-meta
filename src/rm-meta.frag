@@ -143,92 +143,19 @@ vec2 softMinUnion(vec2 curr, float d, float id)
 }
 
 
-float sdBoundingBox(vec3 p, vec3 b, float e)
-{
-    p = abs(p)-b;
-    vec3 q = abs(p+e)-e;
-    return min(min(
-    length(max(vec3(p.x, q.y, q.z), 0.0))+min(max(p.x, max(q.y, q.z)), 0.0),
-    length(max(vec3(q.x, p.y, q.z), 0.0))+min(max(q.x, max(p.y, q.z)), 0.0)),
-    length(max(vec3(q.x, q.y, p.z), 0.0))+min(max(q.x, max(q.y, p.z)), 0.0));
-}
-
-float sdHexPrism( vec3 p, vec2 h )
-{
-    const vec3 k = vec3(-0.8660254, 0.5, 0.57735);
-    p = abs(p);
-    p.xy -= 2.0*min(dot(k.xy, p.xy), 0.0)*k.xy;
-    vec2 d = vec2(
-    length(p.xy-vec2(clamp(p.x,-k.z*h.x,k.z*h.x), h.x))*sign(p.y-h.x),
-    p.z-h.y );
-    return min(max(d.x,d.y),0.0) + length(max(d,0.0));
-}
-
 float shape(float v, float x)
 {
     return x > 0.0 ? -abs(v) : abs(v);
 }
 
-const mat2 frontPlaneRot = ROT(0.05235987755982988);
-const mat2 backPlaneRot = ROT(-0.05235987755982988);
-const mat2 sCutRot = ROT(0.88);
-const mat2 rotate90 = ROT(1.5707963267948966);
-const mat2 rotate60 = ROT(1.0471975511965976);
-const mat2 rotate30 = ROT(0.5235987755982988);
-const mat2 fourShear = SHEARX(-0.20943951023931953);
-
-
-const float sin60 = sin(tau/6.0);
-vec2 N22 (vec2 p) {
-    vec3 a = fract(p.xyx*vec3(123.34, 234.34, 345.65));
-    a += dot(a, a+34.45);
-    return fract(vec2(a.x*a.y, a.y*a.z));
-}
-
-float atan2(in float y, in float x)
-{
-    return abs(x) > abs(y) ? hpi - atan(x,y) : atan(y,x);
-}
-float ndot( in vec2 a, in vec2 b ) { return a.x*b.x - a.y*b.y; }
-
-float sdRhombus( in vec2 p, in vec2 b )
-{
-    vec2 q = abs(p);
-    float h = clamp((-2.0*ndot(q,b)+ndot(b,b))/dot(b,b),-1.0,1.0);
-    float d = length( q - 0.5*b*vec2(1.0-h,1.0+h) );
-    return d * sign( q.x*b.y + q.y*b.x - b.x*b.y );
-}
-
-
-float sdEquilateralTriangle( in vec2 p )
-{
-    const float k = sqrt(3.0);
-    p.x = abs(p.x) - 1.0;
-    p.y = p.y + 1.0/k;
-    if( p.x+k*p.y>0.0 ) p = vec2(p.x-k*p.y,-k*p.x-p.y)/2.0;
-    p.x -= clamp( p.x, -2.0, 0.0 );
-    return -length(p)*sign(p.y);
-}
-
-float sdStar5(in vec2 p, in float r, in float rf)
-{
-    const vec2 k1 = vec2(0.809016994375, -0.587785252292);
-    const vec2 k2 = vec2(-k1.x,k1.y);
-    p.x = abs(p.x);
-    p -= 2.0*max(dot(k1,p),0.0)*k1;
-    p -= 2.0*max(dot(k2,p),0.0)*k2;
-    p.x = abs(p.x);
-    p.y -= r;
-    vec2 ba = rf*vec2(-k1.y,k1.x) - vec2(0,1);
-    float h = clamp( dot(p,ba)/dot(ba,ba), 0.0, r );
-    return length(p-ba*h) * sign(p.y*ba.x-p.x*ba.y);
-}
-
 vec2 getDistance(vec3 p) {
 
-    vec2 result = vec2(1e6, 1.0);
-    result = opUnion(result, sdTorus(p - vec3(0,1,0), vec2(2, 0.5)) - 0.05, 1.0);
-    return result;
+    float t = u_time;
+
+    float resultA = (sdSphere(p - vec3(sin(t) * 2.0,-2,0), 2.0) + sdSphere(p - vec3(-sin(t) * 2.0,-2,0), 2.0));
+
+    float resultB = smin(sdSphere(p - vec3(sin(t) * 2.0,2,0), 2.0), sdSphere(p - vec3(-sin(t) * 2.0,2,0), 2.0), 0.5);
+    return opUnion(vec2(resultA, 2.0), resultB, 3.0);
 
 }
 
@@ -316,17 +243,16 @@ float softshadow( in vec3 ro, in vec3 rd, float k, float mx )
 }
 
 
-vec3 getBackground(in vec3 n, int offset)
+vec3 getBackground(in vec3 n)
 {
-
     vec3 tb = vec3(0, n.y > 0.0 ? 1 : -1 , 0);
-    vec3 tbCol = u_background[offset + (n.y > 0.0 ? 5 : 4)];
+    vec3 tbCol = u_background[(n.y > 0.0 ? 5 : 4)];
 
     vec3 rl = vec3(n.x > 0.0 ? 1 : -1 , 0, 0);
-    vec3 rlCol = u_background[offset + (n.x > 0.0 ? 0 : 2)];
+    vec3 rlCol = u_background[(n.x > 0.0 ? 0 : 2)];
 
     vec3 fb = vec3(0, 0, n.z > 0.0 ? 1 : -1);
-    vec3 fbCol = u_background[offset + (n.z > 0.0 ? 1 : 3)];
+    vec3 fbCol = u_background[(n.z > 0.0 ? 1 : 3)];
 
 
     float a1 = length(cross(n, tb));
@@ -344,9 +270,9 @@ void main(void)
     vec2 m = u_mouse.xy/u_resolution.xy;
 
     vec3 ro = vec3(
-    0,
-    6,
-    -10
+        0,
+        0,
+        -20
     );
 
     ro.yz *= Rot((-m.y + 0.5) * pi + u_time * 0.27);
@@ -360,10 +286,7 @@ void main(void)
 
     float pos = fract(t * 4.0);
     float id = mod(floor(t * 4.0), 4.0);
-    int offset = int(id + step(0.5, -2. + (pos * 4.0) + sin(length(vec2(rand(id) * 0.5, rand(id+12.0) * 0.5) - uv)))) * 6;
-
-
-    vec3 col = getBackground(rd, offset);
+    vec3 col = getBackground(rd);
 
     vec3 result = rayMarch(ro, rd);
     float d = result.x;
@@ -398,10 +321,10 @@ void main(void)
         //float shadow = softshadow(p, lightDir, 10.0, length(lightPos - p));
         vec3 specular = lightColor * spec * vec3(0.7843,0.8823,0.9451) * 0.5;
 
-        vec3 ref = getBackground(reflect(rd, norm), offset);
+        vec3 ref = getBackground(reflect(rd, norm));
         vec3 diffuse = diff * tone;
 
-        col = ref * 0.7 + ambient + (diffuse + specular) ;
+        col = ref * 0.5 + ambient + (diffuse + specular) ;
 
     }
     //col = applyFog(col, d, ro, rd, p);

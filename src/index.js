@@ -2,8 +2,8 @@
 import STYLE from "./style.css"
 import perfNow from "performance-now"
 
-import vertexShaderSource from "./rm-05.vert"
-import fragmentShaderSource from "./rm-05.frag"
+import vertexShaderSource from "./rm-meta.vert"
+import fragmentShaderSource from "./rm-meta.frag"
 import Color from "./Color";
 
 //console.log(fragmentShaderSource)
@@ -212,38 +212,7 @@ window.onload = () => {
             "#50aead",
             "#63adad",
             "#050401",
-            "#d8f9ba",
-
-            "#dadf5c",
-            "#655de7",
-            "#3bc9cd",
-            "#ff4e49",
-            "#37853a",
-            "#ff9bfc",
-
-            "#ff2200",
-            "#ff1100",
-            "#ff8800",
-            "#ff0000",
-            "#030103",
-            "#010104",
-
-            "#888",
-            "#898",
-            "#988",
-            "#889",
-            "#000",
-            "#fff",
-
-            // repeat first
-            "#62b9b9",
-            "#0784aa",
-            "#50aead",
-            "#63adad",
-            "#050401",
-            "#d8f9ba",
-
-
+            "#d8f9ba"
         ],
         1
     ));
