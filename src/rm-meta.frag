@@ -98,7 +98,7 @@ vec2 getDistance(vec3 p) {
     float resultA = (sdSphere(p - vec3(sin(t) * 2.0,-2,0), 2.0) + sdSphere(p - vec3(-sin(t) * 2.0,-2,0), 2.0));
 
     float resultB = smin(sdSphere(p - vec3(sin(t) * 2.0,2,0), 2.0), sdSphere(p - vec3(-sin(t) * 2.0,2,0), 2.0), 0.5);
-    return opUnion(vec2(resultA, 2.0), resultB, 3.0);
+    return opUnion(vec2(resultA, 2.0), resultB, 4.0);
 
 }
 
